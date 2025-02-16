@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hand Gesture Recognition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        button .gmbr {
+        background-color: white;
+        padding: 5px;
+        border-radius: 50%;
+        transition: transform 0.4s ease;
+        }
+        button .gmbr:hover{
+            transform: rotate(80deg);
+        }
+        .darkmode{
+        background-color: #1A1A1A;
+        color:white;
+        transition: .3s ease-in-out;
+        align-items:left;
+        }
+
+        .offcanvas.darkmode {
+        background-color: #333;
+        }
+        .tomboll {
+        background-color: transparent;
+        border: none;
+        width: 30px;
+        padding: 0;
+        cursor: pointer;
+        transition: transform 0.2s;
+        }
+
+        .tomboll:hover {
+        transform: scale(1.2);
+        
+        }
+
+        
+
+        .userr {
+            margin: 20px auto; 
+            padding: 15px;
+            border-radius: 15px;
+            width: 300px; 
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            
+        }
+        .userr.darkmode{
+            background-color: rgb(68, 64, 64);
+            
+        }
+        .userr p {
+            margin: 5px 0;
+            font-weight: bold;
+            
+            font-size: 25px;
+        }
+        .userr span {
+            font-weight: normal;
+           
+            display: block;
+            padding-top:6px ;
+            font-size: 25px;
+            display: inline;
+            
+        }
+
+        .offcanvas {
+            overflow: visible !important;
+        }
+        #scrollspy-container {
+            height: 100vh;
+            
+            overflow-y:auto;
+        }
+
+        #navbar-example2.darkmode{
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            
+            
+        }
+        #navbar-example2 {
+            background-color: rgba(255, 255, 255, 0.2); /* Warna semi-transparan */
+            backdrop-filter: blur(10px); /* Efek blur */
+            -webkit-backdrop-filter: blur(10px); /* Untuk Safari */
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Efek bayangan opsional */
+        }
+
+        #kartu.darkmode{
+            background-color: rgb(68, 64, 64);
+            
+
+        }
+
+        .kartu2{
+            
+            box-shadow: 50 50 0px rgba(0, 0, 0, 0.1);
+        }
+        #kartu2.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu3.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu4.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu5.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu6.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu7.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kartu8.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #kmra2.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+        #petunjuk.darkmode{
+            background-color: rgb(68, 64, 64);
+
+        }
+       
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+        span {
+            text-align: center;
+            font-size: 60px;
+            font-family: 'roboto', sans-serif;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeIn 0.9s ease-in-out;
+            
+        }
+        .navbar {
+        display: flex;
+        align-items: center;
+        padding: 80;
+        
+        
+        }
+        .navbar ul{
+            margin-right: 40px;
+        }
+
+        .nav-pills {
+            margin-left: 10px;
+        }
+
+        .nav-item {
+            margin-right: 5px;
+        }
+      
+        #tableContainer {
+        background-color: white;
+        transition: all 0.3s ease;
+    }
+
+    #tableContainer.darkmode {
+        background-color: rgb(31, 41, 55);
+    }
+    
+    #tableContainer table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    #tableContainer thead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #f3f4f6;
+        transition: background-color 0.3s ease;
+    }
+    
+    #tableContainer.darkmode thead {
+        background-color: rgb(31, 41, 55);
+    }
+    
+    #tableContainer.darkmode tbody {
+        background-color: rgb(17, 24, 39);
+    }
+
+    #tableContainer tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    #tableContainer.darkmode tbody tr:hover {
+        background-color: rgb(55, 65, 81);
+    }
+
+    </style>
+
+</head>
+<body class=" min-h-screen">
+  
+    <nav id="navbar-example2" class="navbar bg-transparent px-2  -mb-20" style="z-index: 100; position: fixed; width: 100%;">
+        <button class="btn btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions"><img class="gmbr" src="{{ url_for('static', filename='images/gear-solid.svg') }}" alt="" width="48px" align="center"></button>
+        <ul class="nav nav-pills  ">
+            <li class="nav-item ">
+                <a class="nav-link " href="#scrollspyHeading1">Start Camera</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#scrollspyHeading2">Gesture</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#scrollspyHeading3">Gesture #2</a>
+            </li>
+            
+        </ul>
+
+        <div class="ms-auto me-3">
+            {% if session.get('user_id') %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        {{ session.get('user_id') }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% if session.get('is_admin') %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin_panel') }}">Admin Panel</a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+  
+
+    
+        
+        
+
+        <div id="scrollspyHeading1" class="py-8 " >
+            <div data-aos="zoom-in">
+            <div class="container mx-auto px-4 py-8 -mt-20">
+                <div class="d-flex align-items-center justify-content-center p-[15rem] "  style="gap: 5rem; ">
+                    
+                    <img class="" src="{{ url_for('static', filename='images/undraw_typing_gcve.svg') }}" width="300px"/>
+
+                    <div>
+                    <h2 class="p-10 -ml-7 font-medium"><span id="kmra">Penerjemah Bahasa Isyarat</span><br>Kami hadir untuk menjembatani komunikasi antara pengguna bahasa isyarat dan masyarakat luas. Dengan teknologi canggih, terjemahan bahasa isyarat menjadi lebih mudah dan cepat — kapan saja dan di mana saja.</h2>
+                    <button class="ml-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-200" >Explore-></button>
+                    </div>
+                  </div>
+                  
+            </div>
+        </div>
+        </div>
+        
+
+    <div data-aos="zoom-in" data-aos-delay="200">
+        <div id="scrollspyHeading2-1" class="py-8" >
+            <div class="container mx-auto px-4 py-8">
+                <div class="max-w-2xl mx-auto rounded-lg shadow-lg p-6 -mt-6" id="kmra2" >
+            
+                    <h1 class="text-3xl font-bold text-center  mb-8">
+                        Hand Gesture Recognition
+                    </h1>
+        
+                    <div class="flex justify-center mb-6">
+                        <button id="startBtn" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex items-center space-x-2"
+                        style="min-width: 160px; height: 45px;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-base text-white">Start Camera</span>
+                        </button>
+                    </div>
+        
+                    <div id="videoContainer" 
+                        class="hidden border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <img id="video" 
+                            src="{{ url_for('video_feed') }}"
+                            class="w-full h-auto"
+                            width="640" 
+                            height="480">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+        <div data-aos="zoom-in" data-aos-delay="400">  
+            <div id="scrollspyHeading2" class="py-8 mt-5" style="margin-top: -112px;">
+              <div class="flex justify-center mb-6 mt-4">
+                <button id="showTableBtn" 
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                    Show Gesture Log
+                </button>
+            </div>
+            
+            <div id="tableContainer" class="hidden max-w-2xl mx-auto mt-4 rounded-lg overflow-hidden shadow-lg">
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                No
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Gesture Name
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Detected At
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Count
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="gestureTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    
+    
+
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions">
+        <div class="offcanvas-header">
+            <button id="tombol" class="btn button btn-outline" style="margin-bottom:30px">
+                <img class="tomboll" id="toggleIcon" src="{{ url_for('static', filename='images/lightbulb-regular.svg') }}" alt="Mode Icon">
+            </button>
+            <button type="button" class="btn-close bg-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="userr -mt-4">
+                <img class="foto" src="{{ url_for('static', filename='imagess/user-regular.svg') }}" alt="User" width="60px">
+                {% if session.get('user_id') %}
+                    <p>Username: <span>{{ session.get('user_id') }}</span></p>
+                    <p class="text-sm">Role: <span>{{ 'Admin' if session.get('is_admin') else 'User' }}</span></p>
+                    <div class="mt-4">
+                        {% if session.get('is_admin') %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-primary mb-2 w-100">Admin Panel</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100">Logout</a>
+                    </div>
+                {% else %}
+                    <p>Guest User</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('login') }}" class="btn btn-primary w-100">Login</a>
+                    </div>
+                {% endif %}
+                <hr>
+            </div>
+        </div>
+    </div>
+  
+</div>
+
+
+
+    
+
+    <script>
+
+    let gestureHistory = [];
+    const gestureTableBody = document.getElementById('gestureTableBody');
+    const tableContainer = document.getElementById('tableContainer');
+    const showTableBtn = document.getElementById('showTableBtn');
+        // Initialize Socket.IO
+    const socket = io({
+        transports: ['websocket'],
+        upgrade: false,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 60000
+    });
+
+    // Socket event handlers
+    socket.on('connect', () => {
+        console.log('Connected to WebSocket server');
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+    });
+
+    socket.on('gesture_detected', (data) => {
+        console.log('Gesture detected:', data);
+        updateGestureLog(data);
+    });
+
+    // Gesture log update function
+
+    function updateGestureLog(data) {
+        try {
+            console.log('Updating gesture log with:', data);
+            
+            // Add to history at the beginning of array
+            gestureHistory.unshift({
+                name: data.name,
+                timestamp: data.timestamp || new Date().toLocaleTimeString(),
+                count: data.count || 1
+            });
+
+            // Keep only last 10 gestures
+            if (gestureHistory.length > 10) {
+                gestureHistory.pop();
+            }
+
+            // Update table if visible
+            if (!tableContainer.classList.contains('hidden')) {
+                const tableContent = gestureHistory
+                    .map((gesture, index) => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                ${index + 1}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                ${gesture.name}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                ${gesture.timestamp}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                    ${gesture.count}
+                                </span>
+                            </td>
+                        </tr>
+                    `)
+                    .join('');
+                
+                gestureTableBody.innerHTML = tableContent;
+                console.log('Table updated with', gestureHistory.length, 'entries');
+            }
+        } catch (error) {
+            console.error('Error updating gesture log:', error);
+        }
+    }
+
+    // Show/Hide table button handler
+    showTableBtn.addEventListener('click', () => {
+        if (tableContainer.classList.contains('hidden')) {
+            tableContainer.classList.remove('hidden');
+            showTableBtn.textContent = 'Hide Gesture Log';
+            showTableBtn.classList.replace('bg-blue-500', 'bg-gray-500');
+            showTableBtn.classList.replace('hover:bg-blue-600', 'hover:bg-gray-600');
+        } else {
+            tableContainer.classList.add('hidden');
+            showTableBtn.textContent = 'Show Gesture Log';
+            showTableBtn.classList.replace('bg-gray-500', 'bg-blue-500');
+            showTableBtn.classList.replace('hover:bg-gray-600', 'hover:bg-blue-600');
+        }
+    });
+
+
+        const startBtn = document.getElementById('startBtn');
+        const videoContainer = document.getElementById('videoContainer');
+        const video = document.getElementById('video');
+        
+    async function toggleCamera() {
+        try {
+            if (startBtn.disabled) return;
+            startBtn.disabled = true;
+            
+            const response = await fetch('/toggle_camera', {
+                method: 'POST',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Camera toggle response:', data);
+            
+            if (data.success) {
+                if (data.status === 'opened') {
+                    // Add timestamp to prevent caching
+                    video.src = `/video_feed?t=${Date.now()}`;
+                    videoContainer.classList.remove('hidden');
+                    startBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span class="text-base text-white">Stop Camera</span>
+                    `;
+                    startBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                    startBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                } else {
+                    video.src = '';
+                    videoContainer.classList.add('hidden');
+                    startBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-base text-white">Start Camera</span>
+                    `;
+                    startBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    startBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                }
+            } else {
+                throw new Error(data.message || 'Failed to toggle camera');
+            }
+        } catch (error) {
+            console.error('Camera toggle error:', error);
+            alert('Failed to toggle camera. Please try again.');
+        } finally {
+            startBtn.disabled = false;
+        }
+    }
+
+        startBtn.addEventListener('click', toggleCamera);
+
+        
+    </script>
+    <script>
+       document.querySelector('.button').addEventListener('click', () => {
+  document.body.classList.toggle('darkmode');
+
+  // Ganti ikon tombol
+  const icon = document.getElementById('toggleIcon');
+  const offcanvas = document.querySelector('#offcanvasWithBothOptions');
+  const kmra = document.querySelector('#kmra'); // Elemen kamera
+  const userr = document.querySelector('.userr');
+  const kartu = document.querySelector('#kartu');
+  const kartu2 = document.querySelector('#kartu2');
+  const kartu3 = document.querySelector('#kartu3');
+  const kartu4 = document.querySelector('#kartu4');
+  const kartu5 = document.querySelector('#kartu5');
+  const kartu6 = document.querySelector('#kartu6');
+  const kartu7 = document.querySelector('#kartu7');
+  const kartu8 = document.querySelector('#kartu8');
+  const kmra2 = document.querySelector('#kmra2');
+  const camm = document.querySelector('#camm');
+  const petunjuk = document.querySelector('#petunjuk');
+  const navbar = document.querySelector('#navbar-example2');
+if (navbar.classList.contains('darkmode')) {
+    navbar.style.backgroundColor = 'rgba(68, 64, 64, 0.9)';
+} else {
+    navbar.style.backgroundColor = 'transparent';
+}
+
+  offcanvas.classList.toggle('darkmode');
+  kmra.classList.toggle('darkmode'); // Toggle class darkmode pada id kmra
+  userr.classList.toggle('darkmode');
+  navbar.classList.toggle('darkmode');
+  kartu.classList.toggle('darkmode');
+  kartu2.classList.toggle('darkmode');
+  kartu3.classList.toggle('darkmode');
+  kartu4.classList.toggle('darkmode');
+  kartu5.classList.toggle('darkmode');
+  kartu6.classList.toggle('darkmode');
+  kartu7.classList.toggle('darkmode');
+  kartu8.classList.toggle('darkmode');
+  kmra2.classList.toggle('darkmode');
+  petunjuk.classList.toggle('darkmode');
+  camm.classList.toggle('darkmode');
+
+  if (document.body.classList.contains('darkmode')) {
+    icon.src = 'moon-solid.svg'; // Gambar siang
+  } else {
+    icon.src = 'lightbulb-regular.svg'; // Gambar malam
+  }
+});
+
+
+
+
+    </script>
+    
+    
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        AOS.init();
+      </script>
+</body>
+</body>
+</html>

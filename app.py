@@ -10,10 +10,25 @@ from collections import deque
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
+import serial
+import time
 
+from serial import SerialTimeoutException
 from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
+
+# Tambahkan fungsi untuk inisialisasi serial
+def initialize_serial(port='/dev/ttyACM0', baud_rate=9600):
+    try:
+        ser = serial.Serial(port, baud_rate, timeout=1)
+        time.sleep(2)  # Tunggu beberapa detik untuk memastikan koneksi serial stabil
+        print(f"Port {port} berhasil dibuka.")
+        return ser
+    except serial.SerialException as e:
+        print(f"Error connecting to Arduino: {e}")
+        return None
+
 
 
 def get_args():
@@ -32,6 +47,10 @@ def get_args():
                         help='min_tracking_confidence',
                         type=int,
                         default=0.5)
+    
+    # Tambahkan argumen untuk port serial
+    parser.add_argument("--serial_port", type=str, default='/dev/ttyACM0',
+                        help='Serial port for Arduino')
 
     args = parser.parse_args()
 
@@ -50,6 +69,9 @@ def main():
     min_detection_confidence = args.min_detection_confidence
     min_tracking_confidence = args.min_tracking_confidence
 
+    # Inisialisasi serial
+    arduino_serial = initialize_serial(port='COM7')
+
     use_brect = True
 
     # Camera preparation ###############################################################
@@ -61,7 +83,7 @@ def main():
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
         static_image_mode=use_static_image_mode,
-        max_num_hands=1,
+        max_num_hands=2,
         min_detection_confidence=min_detection_confidence,
         min_tracking_confidence=min_tracking_confidence,
     )
@@ -141,6 +163,21 @@ def main():
 
                 # Hand sign classification
                 hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
+
+                gesture_label = keypoint_classifier_labels[hand_sign_id]
+
+                # Tambahkan kode untuk mengirimkan data ke Arduino
+                if arduino_serial and serial.Serial.isOpen(arduino_serial):
+                    try:
+                        # Send the gesture ID to the Arduino
+                         arduino_serial.write((gesture_label + '\n').encode())
+                         arduino_serial.flush()
+                    except serial.SerialException as e:
+                        print(f"Error sending data to Arduino: {e}")
+                else:
+                    print("Port serial tidak terbuka.")
+
+
                 if hand_sign_id == 2:  # Point gesture
                     point_history.append(landmark_list[8])
                 else:
@@ -176,6 +213,12 @@ def main():
 
         # Screen reflection #############################################################
         cv.imshow('Hand Gesture Recognition', debug_image)
+
+        
+    # tutup koneksi serial
+    if arduino_serial and arduino_serial.is_open:
+        arduino_serial.close()
+        print("Port serial ditutup.")
 
     cap.release()
     cv.destroyAllWindows()
